@@ -3,3 +3,6 @@ secrets.txt
 /bin
 *.csv
 /obj
+/venv
+initial_data.json
+diffs.txt
