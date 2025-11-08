@@ -6,3 +6,4 @@ secrets.txt
 /venv
 initial_data.json
 diffs.txt
+*.json

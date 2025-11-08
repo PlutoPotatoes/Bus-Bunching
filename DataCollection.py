@@ -70,4 +70,4 @@ def collectionLoop(routes, interval = 5):
                     f.write(str(timestamp) + "\t" + diff + "\n")
                 lastdata = deepcopy(current)
         
-collectionLoop(routes, interval=30)
+#collectionLoop(routes, interval=30)
