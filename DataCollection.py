@@ -7,7 +7,7 @@ import jsonpatch
 import time
 from copy import deepcopy
 
-agencyKey = 'lametro' # also we have lametro-rail
+agencyKey = 'lametro-rail' # also we have lametro-rail, lametro
 endpoint = "https://api.goswift.ly" # mock is https://stoplight.io/mocks/swiftly-inc/realtime-standalone/28436057
 routes = ['207', '754']
 
@@ -43,8 +43,7 @@ def getRoutes(routes):
     for entry in data["entity"]:
         routeID = str(entry['tripUpdate']['trip']['routeId'])
         routeID = routeID[0:routeID.find('-')]
-        if routeID in routes:
-            updates[routeID].append(entry['tripUpdate'])
+        updates[routeID].append(entry['tripUpdate'])
             #if(updates['scheduleRelationship'] == 'SCHEDULED'):
                 #if(updates['stopTimeUpdate']):
                     #dt_object = datetime.fromtimestamp(int([0]['arrival']['time']))
@@ -71,3 +70,7 @@ def collectionLoop(routes, interval = 5):
                 lastdata = deepcopy(current)
         
 #collectionLoop(routes, interval=30)
+
+
+with open('traindata.json', 'w') as f:
+    json.dump(dict(getRoutes('1')), f, indent=4)

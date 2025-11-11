@@ -2,10 +2,10 @@ import json
 import pandas as pd
 import datetime
 
-with open('initial_data.json', 'r') as file:
+with open('startData2.json', 'r') as file:
     data = json.load(file)
 
-data = data['207']
+data = data['4']
 trips = []
 for trip in data:
     tripData = {}
@@ -13,6 +13,8 @@ for trip in data:
     tripData['routeId'] = trip['trip']['routeId']
     tripData['directionId'] = trip['trip']['directionId']
     tripData['timestamp'] = trip['timestamp']
+    if('vehicle' in trip.keys()):
+        tripData['vehicleId'] = trip['vehicle']['id']
     for update in trip['stopTimeUpdate']:
         tripData['stopSequence'] = update['stopSequence']
         tripData['stopId'] = update['stopId']
@@ -21,11 +23,10 @@ for trip in data:
             tripData['arrivalTime'] = time
             tripData['departureTime'] = ''
 
-        else:
-            tripData['arrivalTime'] = ''
-            tripData['departureTime'] = update['departure']['time']
+        if('departure' in update.keys()):
+            tripData['departureTime'] = datetime.datetime.fromtimestamp(int(update['departure']['time']))
         trips.append(tripData)
         
 df = pd.DataFrame(trips)
-print(df.drop_duplicates())
+print(df[df['tripId'] == '10004003782813-JUNE25'].to_string())
 
