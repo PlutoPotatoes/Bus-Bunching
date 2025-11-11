@@ -2,17 +2,17 @@ import json
 import pandas as pd
 import datetime
 
-with open('startData2.json', 'r') as file:
+with open('traindata.json', 'r') as file:
     data = json.load(file)
 
-data = data['4']
+data = data['80']
 trips = []
 for trip in data:
     tripData = {}
     tripData['tripId'] = trip['trip']['tripId']
     tripData['routeId'] = trip['trip']['routeId']
     tripData['directionId'] = trip['trip']['directionId']
-    tripData['timestamp'] = trip['timestamp']
+    tripData['timestamp'] = datetime.datetime.fromtimestamp(int(trip['timestamp']))
     if('vehicle' in trip.keys()):
         tripData['vehicleId'] = trip['vehicle']['id']
     for update in trip['stopTimeUpdate']:
@@ -28,5 +28,5 @@ for trip in data:
         trips.append(tripData)
         
 df = pd.DataFrame(trips)
-print(df[df['tripId'] == '10004003782813-JUNE25'].to_string())
+print(df[df["routeId"]=='801'].sort_values([ 'directionId', 'stopSequence',]).drop_duplicates().to_string())
 
