@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 import numpy as np
 from collections import defaultdict
+import jsonpatch
+from tqdm import tqdm
 
 '''
 The Big TODO:
@@ -14,11 +16,9 @@ create data sifting algorithm where the core loop does the following:
 
 '''
 
-with open('media/initial_data_20251111_030908.json', 'r') as file:
-    data = json.load(file)
+initial_data_path = 'data/initial_data_20251111_030908.json'
+diff_data_path = 'data/diffs_20251111_030908.json'
 
-
-data = data['80']
 def get_trips(data):
     trips = []
     for trip in data:
@@ -59,10 +59,10 @@ def get_station_data(df, TrainStations):
         arrivalTime = stop['arrivalTime']
         prevStop = None
         if stopId in TrainStations.keys():
-            print('got stop')
+            # print('got stop')
             if route in TrainStations[stopId].keys():
                 if direction in TrainStations[stopId][route].keys():
-                    print('in the zone')
+                    # print('in the zone')
                     #both exist already, append and update
                     prevStop = TrainStations[stopId][route][direction][1]
                     waitTime = prevStop - stop['arrivalTime']
@@ -81,19 +81,35 @@ def get_station_data(df, TrainStations):
         keys = ['stopId', 'routeId', 'directionId', 'previousStop', 'thisStop', 'waitTime']
         values = [stopId, route, direction, prevStop, arrivalTime, waitTime]
         data.append(dict(zip(keys, values)))
-    print(TrainStations)
+    # print(TrainStations)
     return TrainStations, pd.DataFrame(data)    
 
 def data_loop():
     #load data
+    with open(initial_data_path, 'r') as file:
+        data = json.load(file)
+
+
+    # data = data['80']
 
     TrainStations = {}
 
     #do the thing
-    df = get_trips(data)
+    df = get_trips(data['80'])
     TrainStations, df = get_station_data(df, TrainStations)
     print(df.to_string())  
 
-    #update data with diff 
-
-
+    #update data with diff
+    with open(diff_data_path, 'r') as file:
+        diffs = file.readlines()
+        
+    for line in tqdm(diffs):
+        timestamp, diff = line.split("\t", 1)
+        patch = jsonpatch.JsonPatch.from_string(diff)
+        data = patch.apply(data)
+        df = get_trips(data['80'])
+        TrainStations, df_new = get_station_data(df, TrainStations)
+        # print(df_new.to_string())
+    
+    
+data_loop()
