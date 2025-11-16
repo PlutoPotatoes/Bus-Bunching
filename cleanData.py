@@ -46,8 +46,7 @@ def get_trips(data):
 
 
 
-def get_station_data(df):
-    TrainStations = {}
+def get_station_data(df, TrainStations):
     data = []
     df = df.drop_duplicates()
     df = df.sort_values(by='arrivalTime')
@@ -83,14 +82,16 @@ def get_station_data(df):
         values = [stopId, route, direction, prevStop, arrivalTime, waitTime]
         data.append(dict(zip(keys, values)))
     print(TrainStations)
-    return pd.DataFrame(data)    
+    return TrainStations, pd.DataFrame(data)    
 
 def data_loop():
     #load data
 
+    TrainStations = {}
+
     #do the thing
     df = get_trips(data)
-    df = get_station_data(df)
+    TrainStations, df = get_station_data(df, TrainStations)
     print(df.to_string())  
 
     #update data with diff 
