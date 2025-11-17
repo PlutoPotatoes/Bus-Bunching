@@ -15,7 +15,7 @@ create data sifting algorithm where the core loop does the following:
 
 '''
 
-initial_data_path = 'data/initial_data_20251111_030908.json'
+initial_data_path = 'media/initial_data_20251111_030908.json'
 diff_data_path = 'data/diffs_20251111_030908.json'
 
 def get_trips(data):
@@ -64,7 +64,7 @@ def get_station_data(df, TrainStations):
                     # print('in the zone')
                     #both exist already, append and update
                     prevStop = TrainStations[stopId][route][direction][1]
-                    waitTime = prevStop - stop['arrivalTime']
+                    waitTime = (stop['arrivalTime'] - prevStop).total_seconds() / 60
                     TrainStations[stopId][route][direction][0].append(waitTime)
                     TrainStations[stopId][route][direction][1] = stop['arrivalTime']
                 else:
@@ -83,7 +83,7 @@ def get_station_data(df, TrainStations):
     # print(TrainStations)
     return TrainStations, pd.DataFrame(data)    
 
-def data_loop():
+def data_loop(initial_data_path, diff_data_path, save_path):
     #load data
     with open(initial_data_path, 'r') as file:
         data = json.load(file)
@@ -95,8 +95,7 @@ def data_loop():
 
     #do the thing
     df = get_trips(data['80'])
-    TrainStations, df = get_station_data(df, TrainStations)
-    print(df.to_string())  
+    TrainStations, final_df = get_station_data(df, TrainStations)
 
     #update data with diff
     with open(diff_data_path, 'r') as file:
@@ -108,7 +107,14 @@ def data_loop():
         data = patch.apply(data)
         df = get_trips(data['80'])
         TrainStations, df_new = get_station_data(df, TrainStations)
-        # print(df_new.to_string())
+        final_df._append(df_new, ignore_index = True)
+
+
+    final_df.sort_values(by='thisStop')
+    final_df.to_csv(save_path)
+
+    
+
     
     
-data_loop()
+data_loop('media/initial_data_20251111_030908.json', 'media/diffs_20251111_030908.json', 'station_data.csv')
