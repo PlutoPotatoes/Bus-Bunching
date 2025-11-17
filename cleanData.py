@@ -39,8 +39,8 @@ def get_trips(data):
             if('departure' in update.keys()):
                 tripData['departureTime'] = datetime.datetime.fromtimestamp(int(update['departure']['time']))
             trips.append(tripData)
-        
     df = pd.DataFrame(trips)
+    df.drop_duplicates(subset=['vehicleId', 'stopId'])
     return df
 
 
@@ -53,6 +53,7 @@ def get_station_data(df, TrainStations):
     for index, stop in df.iterrows():
         stopId = stop['stopId']
         route = stop['routeId']
+        vehicle = stop['vehicleId']
         direction = stop['directionId']
         waitTime = -1
         arrivalTime = stop['arrivalTime']
@@ -77,8 +78,8 @@ def get_station_data(df, TrainStations):
             #nothing stored, add it all
             TrainStations[stopId] = {route : {direction : [[-1], stop['arrivalTime']]}}
         #add data to dataframe list
-        keys = ['stopId', 'routeId', 'directionId', 'previousStop', 'thisStop', 'waitTime']
-        values = [stopId, route, direction, prevStop, arrivalTime, waitTime]
+        keys = ['stopId', 'routeId', 'vehicleId', 'directionId', 'previousStop', 'thisStop', 'waitTime']
+        values = [stopId, route, vehicle, direction, prevStop, arrivalTime, waitTime]
         data.append(dict(zip(keys, values)))
     # print(TrainStations)
     return TrainStations, pd.DataFrame(data)    
@@ -111,6 +112,7 @@ def data_loop(initial_data_path, diff_data_path, save_path):
 
 
     final_df.sort_values(by='thisStop')
+    final_df.drop_duplicates(subset=['vehicleId', 'stopId'])
     final_df.to_csv(save_path)
 
     
