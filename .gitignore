@@ -1,7 +1,6 @@
 secrets.txt
 **/__pycache__/
 /bin
-*.csv
 /obj
 /venv
 initial_data.json
