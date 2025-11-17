@@ -12,7 +12,6 @@ The Big TODO:
 create data sifting algorithm where the core loop does the following:
 - iterate through all stopIDs and check for new stop times 
 - on new stop detected store wait time in minutes and update last stop time FOR EACH TRAIN LINE AND DIRECTION 
-- grab next diff, apply, and repeat
 
 '''
 
