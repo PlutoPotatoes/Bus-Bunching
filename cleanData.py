@@ -15,8 +15,8 @@ create data sifting algorithm where the core loop does the following:
 
 '''
 
-initial_data_path = 'media/initial_data_20251111_030908.json'
-diff_data_path = 'data/diffs_20251111_030908.json'
+initial_data_path = 'data/initial_data_20251116_100609.json'
+diff_data_path = 'data/diffs_20251116_100609.json'
 
 def get_trips(data):
     trips = []
@@ -108,15 +108,18 @@ def data_loop(initial_data_path, diff_data_path, save_path):
         data = patch.apply(data)
         df = get_trips(data['80'])
         TrainStations, df_new = get_station_data(df, TrainStations)
-        final_df._append(df_new, ignore_index = True)
+        df_new.sort_values(by='thisStop')
+        # df_new.drop_duplicates(subset=['vehicleId', 'stopId'])
+        final_df = final_df._append(df_new, ignore_index = True)
 
 
     final_df.sort_values(by='thisStop')
     final_df.drop_duplicates(subset=['vehicleId', 'stopId'])
+    print(final_df)
     final_df.to_csv(save_path)
 
     
 
     
     
-data_loop('media/initial_data_20251111_030908.json', 'media/diffs_20251111_030908.json', 'station_data.csv')
+data_loop('data/initial_data_20251116_100609.json', 'data/diffs_20251116_100609.json', 'station_data_2.csv')
