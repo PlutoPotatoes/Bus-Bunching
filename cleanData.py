@@ -49,7 +49,7 @@ def get_station_data(df, TrainStations):
     data = []
     df = df.drop_duplicates()
     df = df.sort_values(by='arrivalTime')
-    df = df.dropna()
+    df = df.dropna(how='all')
     for index, stop in df.iterrows():
         stopId = stop['stopId']
         route = stop['routeId']
@@ -114,12 +114,39 @@ def data_loop(initial_data_path, diff_data_path, save_path):
 
 
     final_df.sort_values(by='thisStop')
-    final_df.drop_duplicates(subset=['vehicleId', 'stopId'])
-    print(final_df)
+    final_df.drop_duplicates(subset=['vehicleId', 'stopId', 'directionId'])
     final_df.to_csv(save_path)
 
-    
+def data_loop_2(initial_data_path, diff_data_path, save_path):
+    #load data
+    with open(initial_data_path, 'r') as file:
+        data = json.load(file)
+    # data = data['80']
+    TrainStations = {}
+
+    #do the thing
+    df = get_trips(data['80'])
+
+    #update data with diff
+    with open(diff_data_path, 'r') as file:
+        diffs = file.readlines()
+        
+    for line in tqdm(diffs):
+        timestamp, diff = line.split("\t", 1)
+        patch = jsonpatch.JsonPatch.from_string(diff)
+        data = patch.apply(data)
+        patch_df = get_trips(data['80'])
+        df = df._append(patch_df, ignore_index = True)
+
+    df = df.drop_duplicates(subset=['tripId', 'stopSequence'])
+
+    TrainStations, final_df = get_station_data(df, TrainStations)
+
+    final_df.sort_values(by='thisStop')
+    final_df.drop_duplicates(subset=['vehicleId', 'stopId', 'directionId'])
+    final_df.to_csv(save_path)
+    df.to_csv('stops.csv')
 
     
     
-data_loop('data/initial_data_20251116_100609.json', 'data/diffs_20251116_100609.json', 'station_data_2.csv')
+data_loop_2('media/initial_data_20251116_100609.json', 'media/diffs_20251116_100609.json', 'station_data_4.csv') 
