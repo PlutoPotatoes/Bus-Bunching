@@ -6,3 +6,5 @@ secrets.txt
 initial_data.json
 diffs.txt
 *.json
+data/.DS_Store
+.DS_Store
