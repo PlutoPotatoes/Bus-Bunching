@@ -14,6 +14,7 @@ create data sifting algorithm where the core loop does the following:
 - on new stop detected store wait time in minutes and update last stop time FOR EACH TRAIN LINE AND DIRECTION 
 
 '''
+bunchThreshold = 5
 
 initial_data_path = 'data/initial_data_20251116_100609.json'
 diff_data_path = 'data/diffs_20251116_100609.json'
@@ -67,8 +68,9 @@ def get_station_data(df, TrainStations):
                     #both exist already, append and update
                     prevStop = TrainStations[stopId][route][direction][1]
                     waitTime = (stop['arrivalTime'] - prevStop).total_seconds() / 60
-                    TrainStations[stopId][route][direction][0].append(waitTime)
-                    TrainStations[stopId][route][direction][1] = stop['arrivalTime']
+                    if waitTime > bunchThreshold:
+                        TrainStations[stopId][route][direction][0].append(waitTime)
+                        TrainStations[stopId][route][direction][1] = stop['arrivalTime']
                 else:
                     #stop and route, no direction
                     TrainStations[stopId][route][direction] = [[-1], stop['arrivalTime']]
@@ -79,9 +81,10 @@ def get_station_data(df, TrainStations):
             #nothing stored, add it all
             TrainStations[stopId] = {route : {direction : [[-1], stop['arrivalTime']]}}
         #add data to dataframe list
-        keys = ['stopId', 'routeId', 'vehicleId', 'directionId', 'stopSequence', 'previousStop', 'thisStop', 'waitTime']
-        values = [stopId, route, vehicle, direction, stopSequence, prevStop, arrivalTime, waitTime]
-        data.append(dict(zip(keys, values)))
+        if waitTime != -1 and waitTime > bunchThreshold:
+            keys = ['stopId', 'routeId', 'vehicleId', 'directionId', 'stopSequence', 'previousStop', 'thisStop', 'waitTime']
+            values = [stopId, route, vehicle, direction, stopSequence, prevStop, arrivalTime, waitTime]
+            data.append(dict(zip(keys, values)))
     # print(TrainStations)
     return TrainStations, pd.DataFrame(data)    
 
@@ -150,4 +153,4 @@ def data_loop_2(initial_data_path, diff_data_path, save_path):
 
     
     
-data_loop_2('media/initial_data_20251116_100609.json', 'media/diffs_20251116_100609.json', 'station_data_5.csv') 
+data_loop_2('media/initial_data_20251116_100609.json', 'media/diffs_20251116_100609.json', 'bunched_station_data_1.csv') 
